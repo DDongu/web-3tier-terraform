@@ -3,13 +3,13 @@
 variable "app_port" {
   description = "Webapp's HTTP port"
   type = number
-  default = 80
+  default = 3000
 }
 
 variable "server_port" {
   description = "Webserver's HTTP port"
   type = number
-  default = 3000
+  default = 8080
 }
 
 variable "my_ip" {
@@ -40,4 +40,22 @@ variable "app_alb_name" {
   description = "The name of the app ALB"
   type = string
   default = "webapp-alb-tobyN"
+}
+
+variable "docker_image_bucket_name" {
+  description = "The name of the docker-image bucket(S3)"
+  type = string
+  default = "docker-image-storage-bucket"
+}
+
+variable "docker_webapp_codedeploy_name" {
+  description = "The name of the webapp_codedeploy"
+  type = string
+  default = "DockerCodeDeployApp"
+}
+
+variable "docker_webapp_codedeploy_group_name" {
+  description = "The name of the webapp_codedeploy Group"
+  type = string
+  default = "DockerDeploymentAppGroup"
 }
