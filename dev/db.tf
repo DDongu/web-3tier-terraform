@@ -24,10 +24,10 @@ resource "aws_security_group" "docdb_sg" {
   }
 }
 
-# ✅ DocumentDB 서브넷 그룹 생성
+# ✅ DocumentDB 서브넷 그룹 생성 (prv_sub_1, prv_sub_2 사용)
 resource "aws_docdb_subnet_group" "docdb_subnet_group" {
   name       = "docdb-subnet-group"
-  subnet_ids = var.docdb_subnet_ids
+  subnet_ids = [aws_subnet.prv_sub_1.id, aws_subnet.prv_sub_2.id]
 
   tags = {
     Name = "docdb-subnet-group"
@@ -42,16 +42,25 @@ resource "aws_docdb_cluster" "docdb" {
   master_password        = var.docdb_password
   backup_retention_period = 7  # 백업 보관 일수
   preferred_backup_window = "07:00-09:00"
-  skip_final_snapshot    = false  # 삭제 시 최종 백업 수행
+  skip_final_snapshot    = true  # 삭제 시 최종 백업 수행 X
+  # skip_final_snapshot    = false  # 삭제 시 최종 백업 수행 O
+  # final_snapshot_identifier = "my-docdb-final-snapshot" 
   deletion_protection    = true   # 실수로 삭제 방지
   vpc_security_group_ids = [aws_security_group.docdb_sg.id]
   db_subnet_group_name   = aws_docdb_subnet_group.docdb_subnet_group.name
 }
 
-# ✅ DocumentDB 인스턴스 추가
+# ✅ DocumentDB 인스턴스 추가 (멀티 AZ)
 resource "aws_docdb_cluster_instance" "docdb_instances" {
   count              = var.docdb_instance_count
   identifier        = "${var.docdb_cluster_id}-instance-${count.index}"
   cluster_identifier = aws_docdb_cluster.docdb.id
   instance_class     = var.docdb_instance_class
+}
+
+# secrets에 DB URI 저장
+resource "aws_ssm_parameter" "documentdb_uri" {
+  name  = "/my-app/documentdb-uri"
+  type  = "SecureString"
+  value = aws_docdb_cluster.docdb.endpoint
 }

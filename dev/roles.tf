@@ -90,6 +90,15 @@ resource "aws_iam_policy" "codedeploy_ec2_policy" {
         Effect   = "Allow"
         Action   = "iam:PassRole"
         Resource = "*"
+      },
+
+      # SSM Parameter Store에 접근할 수 있도록 IAM Role을 설정
+      {
+        "Effect": "Allow",
+        "Action": [
+            "ssm:GetParameter"
+        ],
+        "Resource": "arn:aws:ssm:*:*:parameter/my-app/documentdb-uri"
       }
     ]
   })

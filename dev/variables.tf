@@ -41,6 +41,8 @@ variable "app_alb_name" {
   default = "webapp-alb-tobyN"
 }
 
+# 프론트엔드 배포용 변수 추가
+
 variable "docker_image_bucket_name" {
   description = "The name of the docker-image bucket(S3)"
   type = string
@@ -59,6 +61,18 @@ variable "docker_webapp_codedeploy_group_name" {
   default = "DockerDeploymentAppGroup"
 }
 
+# 백엔드 배포용 변수 추가
+variable "docker_backend_codedeploy_name" {
+  description = "The name of the backend CodeDeploy application"
+  type        = string
+  default     = "BackendCodeDeployApp"
+}
+
+variable "docker_backend_codedeploy_group_name" {
+  description = "The name of the backend CodeDeploy deployment group"
+  type        = string
+  default     = "BackendDeploymentAppGroup"
+}
 
 # DocumentDB 관련(with. MongoDB)
 variable "docdb_cluster_id" {
@@ -78,7 +92,7 @@ variable "docdb_instance_count" {
 
 variable "docdb_username" {
   description = "DocumentDB admin username"
-  default     = "admin"
+  default     = "docdb_admin"
 }
 
 variable "docdb_password" {
@@ -88,7 +102,7 @@ variable "docdb_password" {
 
 variable "docdb_subnet_ids" {
   description = "List of subnet IDs for DocumentDB"
-  type        = list(string)
+  default     = []
 }
 
 variable "docdb_security_group_name" {

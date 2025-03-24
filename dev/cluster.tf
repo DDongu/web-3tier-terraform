@@ -142,6 +142,46 @@ resource "aws_launch_template" "webserver_template" {
   instance_type = "t3.small"
   vpc_security_group_ids = [aws_security_group.webserver_sg.id]
 
+  # IAM Instance Profile 추가
+  iam_instance_profile {
+    name = aws_iam_instance_profile.codedeploy_instance_profile.name
+  }
+
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    # 업데이트 및 Docker 설치
+    sudo yum update -y
+    sudo amazon-linux-extras enable docker
+    sudo yum install -y docker
+
+    # Docker 서비스 실행 및 부팅 시 자동 실행 설정
+    sudo systemctl start docker
+    sudo systemctl enable docker
+
+    # ec2-user를 Docker 그룹에 추가 (sudo 없이 사용 가능)
+    sudo usermod -aG docker ec2-user
+
+    # docker compose 설치
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+
+
+    # Health Check를 통과하기 위한 임시 Nginx 컨테이너 실행 (포트 3000)
+    docker run -d -p 8080:8080 --name backend-app trion/rest-api-demo:latest
+
+    # CodeDeploy Agent 설치 (Amazon Linux 2 기준)
+    sudo yum update -y
+    sudo yum install -y ruby wget
+    cd /home/ec2-user
+    wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
+    chmod +x ./install
+    sudo ./install auto
+
+    # CodeDeploy Agent 시작 및 자동 실행 설정
+    sudo service codedeploy-agent start
+    sudo systemctl enable codedeploy-agent
+  EOF
+  )
 }
 
 # Auto Scaling Group(ASG) 작성
@@ -174,6 +214,13 @@ resource "aws_autoscaling_group" "webserver_asg" {
 
   min_size = 2
   max_size = 3
+
+  # CodeDeploy 배포를 위한 태그 추가
+  tag {
+    key                 = "CodeDeploy"
+    value               = "true"
+    propagate_at_launch = true
+  }
 
   # IAM Role 변경 시 자동으로 인스턴스 교체
   instance_refresh {
