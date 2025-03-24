@@ -57,10 +57,3 @@ resource "aws_docdb_cluster_instance" "docdb_instances" {
   cluster_identifier = aws_docdb_cluster.docdb.id
   instance_class     = var.docdb_instance_class
 }
-
-# secrets에 DB URI 저장
-resource "aws_ssm_parameter" "documentdb_uri" {
-  name  = "/my-app/documentdb-uri"
-  type  = "SecureString"
-  value = aws_docdb_cluster.docdb.endpoint
-}
