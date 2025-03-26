@@ -76,7 +76,8 @@ resource "aws_security_group" "alb_sg_server" {
     from_port = var.server_port
     to_port = var.server_port
     protocol = "tcp"
-    security_groups = [ aws_security_group.webapp_sg.id ]
+    cidr_blocks = [ "0.0.0.0/0" ]
+    # security_groups = [ aws_security_group.webapp_sg.id ]
   }
 
   egress {
@@ -94,6 +95,10 @@ resource "aws_launch_template" "webapp_template" {
   instance_type = "t3.micro"
   vpc_security_group_ids = [aws_security_group.webapp_sg.id]
   key_name = "aws-practice-key"
+
+  tags = {
+    Name = "webapp"
+  }
 
   # IAM Instance Profile 추가
   iam_instance_profile {
@@ -139,8 +144,8 @@ resource "aws_launch_template" "webapp_template" {
     BACKEND_ELB_URL=$(aws ssm get-parameter --name "/my-app/backend-elb-url" --query "Parameter.Value" --output text)
 
     ## .env 파일 생성 (기존 값 유지, ELB 주소만 업데이트)
-    ENV_FILE="/home/ec2-user/app/.env"
-    mkdir -p /home/ec2-user/app
+    ENV_FILE="/home/ec2-user/.env"
+    mkdir -p /home/ec2-user
 
     ## 기존 .env가 있다면 유지, 없으면 새로 생성
     touch $ENV_FILE
@@ -164,6 +169,11 @@ resource "aws_launch_template" "webserver_template" {
   image_id = "ami-062cddb9d94dcf95d"
   instance_type = "t3.small"
   vpc_security_group_ids = [aws_security_group.webserver_sg.id]
+  key_name = "aws-practice-key"
+
+  tags = {
+    Name = "webserver"
+  }
 
   # IAM Instance Profile 추가
   iam_instance_profile {
@@ -218,6 +228,12 @@ resource "aws_autoscaling_group" "webapp_asg" {
   max_size = 3
 
   tag {
+    key                 = "Name"
+    value               = "webapp-instance"
+    propagate_at_launch = true
+  }
+
+  tag {
     key                 = "CodeDeploy"
     value               = "true"
     propagate_at_launch = true  # ASG에서 생성된 모든 인스턴스에 태그 적용
@@ -237,6 +253,12 @@ resource "aws_autoscaling_group" "webserver_asg" {
 
   min_size = 2
   max_size = 3
+
+  tag {
+    key                 = "Name"
+    value               = "webserver-instance"
+    propagate_at_launch = true
+  }
 
   # CodeDeploy 배포를 위한 태그 추가
   tag {
@@ -261,7 +283,7 @@ resource "aws_autoscaling_group" "webserver_asg" {
 }
 
 # ALB 생성
-## ALB 설정
+## ALB 
 resource "aws_lb" "webapp_alb" {
   name = var.app_alb_name
   load_balancer_type = "application"
@@ -274,6 +296,7 @@ resource "aws_lb" "webapp_alb" {
 resource "aws_lb" "webserver_alb" {
   name = var.server_alb_name
   load_balancer_type = "application"
+  internal           = true
   subnets = [ aws_subnet.prv_nat_sub_1.id, aws_subnet.prv_nat_sub_2.id ]
   security_groups = [ aws_security_group.alb_sg_server.id ]
 }

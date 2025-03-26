@@ -97,7 +97,7 @@ variable "docdb_username" {
 
 variable "docdb_password" {
   description = "DocumentDB admin password"
-  default     = "SecurePassword123!" # 변경 필요
+  default     = "SecurePassword123" # 변경 필요
 }
 
 variable "docdb_subnet_ids" {

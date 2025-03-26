@@ -92,13 +92,29 @@ resource "aws_iam_policy" "codedeploy_ec2_policy" {
         Resource = "*"
       },
 
-      # SSM Parameter Store에 접근할 수 있도록 IAM Role을 설정
+      # ✅ SSM Parameter Store에서 백엔드 ELB URL 가져오기
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath"
+        ]
+        Resource = [
+          "arn:aws:ssm:ap-northeast-2:796973512322:parameter/my-app/documentdb-uri", 
+          "arn:aws:ssm:ap-northeast-2:796973512322:parameter/my-app/backend-elb-url",
+          "arn:aws:ssm:ap-northeast-2:796973512322:parameter/my-app/frontend-elb-url"
+        ]
+      },
       {
         "Effect": "Allow",
         "Action": [
-            "ssm:GetParameter"
+          "rds:DescribeDBClusters",
+          "rds:ListTagsForResource",
+          "rds:DescribeDBInstances",
+          "rds:DescribeDBSubnetGroups"
         ],
-        "Resource": "arn:aws:ssm:*:*:parameter/my-app/documentdb-uri"
+        "Resource": "*"
       }
     ]
   })

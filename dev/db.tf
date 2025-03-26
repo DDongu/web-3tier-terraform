@@ -45,9 +45,11 @@ resource "aws_docdb_cluster" "docdb" {
   skip_final_snapshot    = true  # 삭제 시 최종 백업 수행 X
   # skip_final_snapshot    = false  # 삭제 시 최종 백업 수행 O
   # final_snapshot_identifier = "my-docdb-final-snapshot" 
-  deletion_protection    = true   # 실수로 삭제 방지
+  deletion_protection    = false   # 실수로 삭제 방지
   vpc_security_group_ids = [aws_security_group.docdb_sg.id]
   db_subnet_group_name   = aws_docdb_subnet_group.docdb_subnet_group.name
+
+  storage_encrypted = false
 }
 
 # ✅ DocumentDB 인스턴스 추가 (멀티 AZ)
