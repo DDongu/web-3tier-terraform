@@ -13,6 +13,7 @@ resource "aws_security_group" "webapp_sg" {
     security_groups = [ aws_security_group.alb_sg_app.id ]
   }
 
+  # Debugging
   ingress {
     from_port   = 22
     to_port     = 22
@@ -76,8 +77,8 @@ resource "aws_security_group" "alb_sg_server" {
     from_port = var.server_port
     to_port = var.server_port
     protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
-    # security_groups = [ aws_security_group.webapp_sg.id ]
+    # cidr_blocks = [ "0.0.0.0/0" ]
+    security_groups = [ aws_security_group.webapp_sg.id ]
   }
 
   egress {
@@ -94,7 +95,7 @@ resource "aws_launch_template" "webapp_template" {
   image_id = "ami-062cddb9d94dcf95d"
   instance_type = "t3.micro"
   vpc_security_group_ids = [aws_security_group.webapp_sg.id]
-  key_name = "aws-practice-key"
+  key_name = "aws-practice-key" # debugging
 
   tags = {
     Name = "webapp"
@@ -219,8 +220,8 @@ resource "aws_launch_template" "webserver_template" {
 
 # Auto Scaling Group(ASG) 작성
 resource "aws_autoscaling_group" "webapp_asg" {
-  vpc_zone_identifier = [ aws_subnet.pub_sub_1.id, aws_subnet.pub_sub_2.id]
-  # vpc_zone_identifier = [ aws_subnet.prv_nat_sub_1.id, aws_subnet.prv_nat_sub_2.id ]
+  # vpc_zone_identifier = [ aws_subnet.pub_sub_1.id, aws_subnet.pub_sub_2.id]
+  vpc_zone_identifier = [ aws_subnet.prv_nat_sub_1.id, aws_subnet.prv_nat_sub_2.id ]
   target_group_arns = [ aws_lb_target_group.target_asg_app.arn ] # ALB와 대상그룹 지정
   health_check_type = "ELB"
 
@@ -259,9 +260,7 @@ resource "aws_autoscaling_group" "webserver_asg" {
     value               = "webserver-instance"
     propagate_at_launch = true
   }
-
-  # CodeDeploy 배포를 위한 태그 추가
-  tag {
+  tag {  # CodeDeploy 배포를 위한 태그 
     key                 = "CodeDeploy"
     value               = "true"
     propagate_at_launch = true

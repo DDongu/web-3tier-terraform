@@ -48,8 +48,6 @@ resource "aws_docdb_cluster" "docdb" {
   deletion_protection    = false   # 실수로 삭제 방지
   vpc_security_group_ids = [aws_security_group.docdb_sg.id]
   db_subnet_group_name   = aws_docdb_subnet_group.docdb_subnet_group.name
-
-  storage_encrypted = false
 }
 
 # ✅ DocumentDB 인스턴스 추가 (멀티 AZ)

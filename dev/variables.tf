@@ -1,3 +1,9 @@
+variable "shared_vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/24"
+}
+
 # 입력 변수 작성
 variable "app_port" {
   description = "Webapp's HTTP port"
@@ -87,7 +93,7 @@ variable "docdb_instance_class" {
 
 variable "docdb_instance_count" {
   description = "Number of DocumentDB instances"
-  default     = 2
+  default     = 1
 }
 
 variable "docdb_username" {

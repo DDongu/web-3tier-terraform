@@ -2,7 +2,7 @@
 resource "aws_ssm_parameter" "documentdb_uri" {
   name  = "/my-app/documentdb-uri"
   type  = "SecureString"
-  value = "mongodb://${var.docdb_username}:${var.docdb_password}@${aws_docdb_cluster.docdb.endpoint}:27017/coronatracker?tls=true&tlsCAFile=/rds-cert/global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+  value = "mongodb://${var.docdb_username}:${var.docdb_password}@${aws_docdb_cluster.docdb.endpoint}:27017/coronatracker?tls=true&tlsCAFile=/app/global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
 }
 
 # 백엔드 ELB 주소(URL)
